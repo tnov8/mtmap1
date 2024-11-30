@@ -62,24 +62,28 @@ H = coo_matrix((values, (rows, cols)), shape=(n,n)).tocsc()
 
 # POWER METHOD WITH LUMPING
 
-alpha = 0.9
+alpha = 0.85
 v = np.ones(n) / n
+v1 = v[:k]
 w = np.ones(n) / n
+w1 = w[:k]
 sigma = np.ones(k + 1) / (k + 1)
+sigma1 = sigma[:k]
+sigma2 = sigma[k]
 H_11 = H[:k, :k]
 H_12 = H[k:, :k]
 pi = np.ones(n)
 
-iterations = 1000
+iterations = 500
 print(iterations, "iterations")
 
 start_time = time.time()
 
 for i in range(iterations):
-    sigma[:k] = alpha * H_11.dot(sigma[:k]) + (1 - alpha) * v[:k] + alpha * sigma[k] * w[:k]
-    sigma[k] = 1 - np.sum(sigma[:k])
-pi[:k] = sigma[:k]
-pi[k:] = alpha * H_12.dot(sigma[:k]) + (1 - alpha) * v[k:] + alpha * sigma[k] * w[k:]
+    sigma1 = alpha * H_11.dot(sigma1) + (1 - alpha) * v1 + alpha * sigma2 * w1
+    sigma2 = 1 - np.sum(sigma1)
+pi[:k] = sigma1
+pi[k:] = alpha * H_12.dot(sigma1) + (1 - alpha) * v[k:] + alpha * sigma2 * w[k:]
 
 end_time = time.time()
 execution_time = end_time - start_time
