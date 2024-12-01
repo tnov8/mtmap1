@@ -73,21 +73,29 @@ sigma2 = sigma[k]
 H_11 = H[:k, :k]
 H_12 = H[k:, :k]
 pi = np.ones(n)
-
-iterations = 500
-print(iterations, "iterations")
+tau = 1e-9
+max_iterations = 10000
 
 start_time = time.time()
 
-for i in range(iterations):
+iterations = 0
+norm_diff = 1
+while norm_diff > tau and iterations < max_iterations:
+    iterations += 1
+    prev_sigma1 = sigma1.copy()
+
     sigma1 = alpha * H_11.dot(sigma1) + (1 - alpha) * v1 + alpha * sigma2 * w1
     sigma2 = 1 - np.sum(sigma1)
-pi[:k] = sigma1
-pi[k:] = alpha * H_12.dot(sigma1) + (1 - alpha) * v[k:] + alpha * sigma2 * w[k:]
+    
+    norm_diff = np.linalg.norm(sigma1 - prev_sigma1)
+    
+    pi[:k] = sigma1
+    pi[k:] = alpha * H_12.dot(sigma1) + (1 - alpha) * v[k:] + alpha * sigma2 * w[k:]
 
 end_time = time.time()
 execution_time = end_time - start_time
 print(f"Power method with lumping: {execution_time:.6f}s")
+print("Iterations: ", iterations, "\n")
 
 
 # REGULAR POWER METHOD
@@ -96,13 +104,18 @@ x = np.ones(n) / n
 
 start_time = time.time()
 
-for i in range(iterations):
+iterations = 0
+norm_diff = 1
+while norm_diff > tau and iterations < max_iterations:
+    iterations += 1
+    prev_x = x.copy()
     x = (1 - alpha) * H.dot(x) + np.full(n, alpha * np.sum(x) / n)
+    norm_diff = np.linalg.norm(x - prev_x)
 
 end_time = time.time()
 execution_time = end_time - start_time
 print(f"Regular power method: {execution_time:.6f}s")
-print()
+print("Iterations: ", iterations, "\n")
 
 
 # inverse permutation to get original nodes
